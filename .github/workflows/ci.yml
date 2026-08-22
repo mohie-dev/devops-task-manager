@@ -2,22 +2,44 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  test-and-build:
+  test:
     runs-on: ubuntu-latest
 
+    env:
+      DB_HOST: ${{ vars.DB_HOST }}
+      DB_PORT: ${{ vars.DB_PORT }}
+      DB_USERNAME: ${{ vars.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ vars.DB_NAME }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRES_IN: ${{ vars.JWT_EXPIRES_IN }}
+      PORT: 3000
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: ${{ vars.DB_NAME }}
+          POSTGRES_USER: ${{ vars.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ${{ vars.DB_USERNAME }} -d ${{ vars.DB_NAME }}"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -28,13 +50,6 @@ jobs:
         working-directory: task-manager-api
         run: npm ci
 
-      - name: Run tests
+      - name: Run E2E tests
         working-directory: task-manager-api
-        run: npm test
-
-      - name: Build application
-        working-directory: task-manager-api
-        run: npm run build
-
-      - name: Build Docker image
-        run: docker build -t task-manager-api:ci ./task-manager-api
+        run: npm run test:e2e
