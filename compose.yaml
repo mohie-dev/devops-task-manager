@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+
+    environment:
+      POSTGRES_DB: task_manager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - task-manager-db-data:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d task_manager"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  api:
+    image: task-manager-api:1.0
+    env_file:
+      - task-manager-api\.env.docker
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  task-manager-db-data:
+    external: true
+
+networks:
+  task-manager-network:

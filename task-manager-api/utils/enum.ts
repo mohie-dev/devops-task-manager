@@ -9,12 +9,8 @@ export enum TaskStatus {
     COMPLETED = 'completed',
 }
 
-export enum LogAction {
-    REGISTER = 'REGISTER',
-    LOGIN = 'LOGIN',
-    CREATE_TASK = 'CREATE_TASK',
-    UPDATE_TASK = 'UPDATE_TASK',
-    DELETE_TASK = 'DELETE_TASK',
-    READ_ALL_TASKS = 'READ_ALL_TASKS',
-    READ_TASK = 'READ_TASK',
+export enum TaskPriority {
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
 }
