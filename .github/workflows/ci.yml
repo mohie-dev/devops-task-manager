@@ -101,6 +101,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/task-manager
-            docker compose pull
-            docker compose up -d --remove-orphans
+            export DOCKER_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/task-manager-api:${{ github.sha }}"
+            docker compose pull api
+            docker compose up -d --force-recreate api
             docker image prune -f
