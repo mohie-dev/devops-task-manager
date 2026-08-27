@@ -85,3 +85,22 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/task-manager-api:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/task-manager-api:${{ github.sha }}
+
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/task-manager
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f
