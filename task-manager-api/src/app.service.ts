@@ -5,7 +5,6 @@ export class AppService {
   checkHealth() {
     return {
       status: 'ok',
-      version: "v2"
     }
   }
 }
