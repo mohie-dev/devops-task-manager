@@ -4,8 +4,6 @@ An end-to-end production system built and operated from scratch: a backend API, 
 
 This isn't just "code that runs" — it's a system designed for high availability, security, and full infrastructure-level transparency, the way real production systems need to be.
 
-> Replace the badges below with your actual repo/CI links once published.
-
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue)
 ![Docker](https://img.shields.io/badge/Containerized-Docker-2496ED)
 ![Cloud](https://img.shields.io/badge/Deployed%20on-AWS%20EC2-orange)
