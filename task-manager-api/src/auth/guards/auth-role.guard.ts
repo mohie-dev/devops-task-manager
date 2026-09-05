@@ -1,67 +1,67 @@
 
-import { 
-    Injectable, 
-    CanActivate, 
-    ExecutionContext,  
-    UnauthorizedException
- } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
-import { JWTPayloadType } from 'utils/type';
-import { Reflector } from '@nestjs/core';
-import { Role } from 'utils/enum';
-import { UsersService } from 'src/users/users.service';
+// import { 
+//     Injectable, 
+//     CanActivate, 
+//     ExecutionContext,  
+//     UnauthorizedException
+//  } from '@nestjs/common';
+// import { ConfigService } from '@nestjs/config';
+// import { JwtService } from '@nestjs/jwt';
+// import { Request } from 'express';
+// import { JWTPayloadType } from 'utils/type';
+// import { Reflector } from '@nestjs/core';
+// // import { Role } from 'utils/enum';
+// import { UsersService } from 'src/users/users.service';
 
-@Injectable()
-export class AuthRolesGuard implements CanActivate {
+// @Injectable()
+// export class AuthRolesGuard implements CanActivate {
 
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly reflector: Reflector,
-    private readonly usersService: UsersService
-  ) { }
+//   constructor(
+//     private readonly jwtService: JwtService,
+//     private readonly configService: ConfigService,
+//     private readonly reflector: Reflector,
+//     private readonly usersService: UsersService
+//   ) { }
 
-  async canActivate(
-    context: ExecutionContext
-  ) {
+//   async canActivate(
+//     context: ExecutionContext
+//   ) {
 
-    const roles: Role[] = this.reflector.getAllAndOverride('roles', [context.getHandler(), context.getClass()])
+//     const roles: Role[] = this.reflector.getAllAndOverride('roles', [context.getHandler(), context.getClass()])
 
-    if (!roles || roles.length === 0) return false
+//     if (!roles || roles.length === 0) return false
 
-    const request: Request = context.switchToHttp().getRequest();
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+//     const request: Request = context.switchToHttp().getRequest();
+//     const [type, token] = request.headers.authorization?.split(' ') ?? [];
 
-    if (token && type === 'Bearer') {
+//     if (token && type === 'Bearer') {
 
-      try {
+//       try {
 
-        const payload: JWTPayloadType = await this.jwtService.verifyAsync(
-          token,
-          {
-            secret: this.configService.get<string>('JWT_SECRET'),
-          }
-        )
+//         const payload: JWTPayloadType = await this.jwtService.verifyAsync(
+//           token,
+//           {
+//             secret: this.configService.get<string>('JWT_SECRET'),
+//           }
+//         )
 
-        const user = await this.usersService.findByEmail(payload.email)
-        if (!user) return false
+//         const user = await this.usersService.findByEmail(payload.email)
+//         if (!user) return false
 
-        if(roles.includes(user.role)) {
-            request['user'] = payload;
-            return true
-        }
+//         if(roles.includes(user.role)) {
+//             request['user'] = payload;
+//             return true
+//         }
 
-        request['user'] = payload
-      } catch (err) {
-        throw new UnauthorizedException("Access denied, Invalid Token")
-      }
+//         request['user'] = payload
+//       } catch (err) {
+//         throw new UnauthorizedException("Access denied, Invalid Token")
+//       }
 
-    } else {
-      throw new UnauthorizedException("Access denied, No Token Provided")
-    }
+//     } else {
+//       throw new UnauthorizedException("Access denied, No Token Provided")
+//     }
 
-    return false
-  }
-}
+//     return false
+//   }
+// }

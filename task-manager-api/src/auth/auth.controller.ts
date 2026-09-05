@@ -6,14 +6,13 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import * as type from 'utils/type';
 import { AuthGuard } from './guards/auth.guard';
 import { UsersService } from 'src/users/users.service';
-import { AuthRolesGuard } from './guards/auth-role.guard';
 
 @Controller('api/auth')
 export class AuthController {
     constructor(
         private readonly usersService: UsersService,
-        private readonly authService: AuthService
-    ) { }
+        private readonly authService: AuthService,
+    ) {}
 
     // POST: ~/api/auth/register
     @Post('/register')

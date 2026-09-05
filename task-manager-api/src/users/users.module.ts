@@ -4,14 +4,15 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
 import { AuthModule } from 'src/auth/auth.module';
+import { RefreshSession } from 'src/sessions/entities/refresh-session.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    forwardRef(() => AuthModule),
-  ],
-  providers: [UsersService],
-  controllers: [UsersController],
-  exports: [UsersService, TypeOrmModule],
+    imports: [
+        TypeOrmModule.forFeature([User, RefreshSession]),
+        forwardRef(() => AuthModule),
+    ],
+    providers: [UsersService],
+    controllers: [UsersController],
+    exports: [UsersService, TypeOrmModule],
 })
-export class UsersModule { }
+export class UsersModule {}

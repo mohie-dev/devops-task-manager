@@ -1,30 +1,67 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Role } from '../../../utils/enum';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from 'typeorm';
+
+import { AuthProvider } from '../../../utils/enum';
 import { Task } from 'src/tasks/entities/task.entity';
+import { RefreshSession } from 'src/sessions/entities/refresh-session.entity';
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-  @Column({ type: 'varchar', length: '150', nullable: true })
-  username?: string;
+    @Column({ type: 'varchar', length: 100 })
+    firstName: string;
 
-  @Column({ type: 'varchar', length: '150', unique: true })
-  email: string;
+    @Column({ type: 'varchar', length: 100 })
+    lastName: string;
 
-  @Column({ type: 'varchar', length: '150', nullable: false })
-  password: string;
+    @Column({ type: 'varchar', length: 255, unique: true })
+    email: string;
 
-  @Column({ type: 'enum', enum: Role, default: Role.USER })
-  role: Role;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    passwordHash: string | null;
 
-  @OneToMany(() => Task, (task) => task.user)
-  tasks: Task[];
+    @Column({ type: 'text', nullable: true })
+    avatar: string | null;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+    @Column({
+        type: 'enum',
+        enum: AuthProvider,
+        default: AuthProvider.LOCAL,
+    })
+    provider: AuthProvider;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    providerId: string | null;
+
+    @Column({ type: 'boolean', default: false })
+    isEmailVerified: boolean;
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean;
+
+    @Column({ type: 'timestamp', nullable: true })
+    lastLoginAt: Date | null;
+
+    @OneToMany(() => Task, (task) => task.user)
+    tasks: Task[];
+
+    @OneToMany(
+        () => RefreshSession,
+        (refreshSession) => refreshSession.user,
+    )
+    refreshSessions: RefreshSession[];
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

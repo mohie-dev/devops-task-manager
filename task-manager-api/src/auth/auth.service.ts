@@ -18,18 +18,23 @@ export class AuthService {
      * @param registerDto 
      * @returns JWT token and user object
      */
-    public async register(registerDto: RegisterDto) {
+    public async register(registerDto: RegisterDto):
+        Promise<{ accessToken: string; user: { id: string; firstName: string; lastName: string; email: string; }; }> {
         const user = await this.usersService.createUser(registerDto);
 
-        const payload: JWTPayloadType = { sub: user.id, email: user.email };
+        const payload: JWTPayloadType = {
+            sub: user.id,
+            email: user.email,
+        };
 
-        const token = this.jwtService.sign(payload);
+        const accessToken = this.jwtService.sign(payload);
 
         return {
-            message: 'User registered successfully',
-            accessToken: token,
+            accessToken,
             user: {
                 id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 email: user.email,
             },
         };
@@ -49,7 +54,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
