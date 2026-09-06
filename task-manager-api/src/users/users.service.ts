@@ -2,19 +2,22 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-
 import { User } from './entities/user.entity';
 import { RegisterDto } from './../auth/dtos/register.dto';
+import { SessionsService } from 'src/sessions/sessions.service';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly sessionsService: SessionsService,
   ) { }
 
   /**
@@ -91,7 +94,50 @@ export class UsersService {
    */
   public async updateLastLoginAt(userId: string): Promise<void> {
     await this.usersRepository.update(userId, {
-        lastLoginAt: new Date(),
+      lastLoginAt: new Date(),
     });
-}
+  }
+
+  /**
+   * Change password for a user
+   * @param userId
+   * @param currentPassword
+   * @param newPassword
+   */
+  public async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.passwordHash) {
+      throw new BadRequestException(
+        'Password change is not available for this account',
+      );
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash,
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.usersRepository.update(userId, {
+      passwordHash,
+    });
+
+    await this.sessionsService.revokeAllUserSessions(userId);
+  }
 }

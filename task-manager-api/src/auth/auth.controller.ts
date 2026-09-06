@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 import * as type from 'utils/type';
-import { AuthGuard } from './guards/auth.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { UsersService } from 'src/users/users.service';
 import { SetCookieInterceptor } from '../common/interceptors/set-cookie.interceptor';
 import { ClearCookieInterceptor } from '../common/interceptors/clear-cookie.interceptor';

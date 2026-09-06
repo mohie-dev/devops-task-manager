@@ -57,6 +57,25 @@ export class SessionsService {
         });
     }
 
+    /**
+     * Revoke all sessions for a specific user
+     * @param userId
+     */
+    public async revokeAllUserSessions(userId: string): Promise<void> {
+        await this.sessionsRepository
+            .createQueryBuilder()
+            .update()
+            .set({
+                revokedAt: new Date(),
+            })
+            .where('user_id = :userId', { userId })
+            .andWhere('revokedAt IS NULL')
+            .execute();
+    }
+
+    /**
+     * Cleanup expired or revoked sessions
+     */
     public async cleanupSessions(): Promise<void> {
         await this.sessionsRepository
             .createQueryBuilder()
