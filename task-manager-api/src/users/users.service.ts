@@ -85,4 +85,13 @@ export class UsersService {
 
     return user;
   }
+
+  /**
+   * Update last login timestamp for a user
+   */
+  public async updateLastLoginAt(userId: string): Promise<void> {
+    await this.usersRepository.update(userId, {
+        lastLoginAt: new Date(),
+    });
+}
 }

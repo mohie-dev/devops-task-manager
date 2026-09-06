@@ -10,6 +10,7 @@ import {
 import { AuthProvider } from '../../../utils/enum';
 import { Task } from 'src/tasks/entities/task.entity';
 import { RefreshSession } from 'src/sessions/entities/refresh-session.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 export class User {
@@ -26,6 +27,7 @@ export class User {
     email: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
+    @Exclude({ toPlainOnly: true })
     passwordHash: string | null;
 
     @Column({ type: 'text', nullable: true })

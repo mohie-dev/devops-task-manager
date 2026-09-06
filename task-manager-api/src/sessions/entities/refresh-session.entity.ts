@@ -22,7 +22,7 @@ export class RefreshSession {
     @JoinColumn({ name: 'user_id' })
     user: User;
 
-    @Column({ type: 'varchar', length: 255 })
+    @Column({ type: 'varchar', length: 255, unique: true })
     tokenHash: string;
 
     @Column({ type: 'timestamp' })

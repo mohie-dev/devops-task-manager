@@ -7,6 +7,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { User } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 import { AuthController } from './auth.controller';
+import { SessionsModule } from 'src/sessions/sessions.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthController } from './auth.controller';
       }
     }),
     forwardRef(() => UsersModule),
+    SessionsModule,
   ],
   providers: [AuthService, AuthGuard],
   controllers: [AuthController],
