@@ -5,12 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { RegisterDto } from './../auth/dtos/register.dto';
 import { SessionsService } from 'src/sessions/sessions.service';
-import { ChangePasswordDto } from './dtos/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -75,6 +74,22 @@ export class UsersService {
   }
 
   /**
+   * Find user by ID
+   */
+  public async findById(
+    userId: string,
+    manager?: EntityManager,
+  ): Promise<User | null> {
+    const repository = manager
+      ? manager.getRepository(User)
+      : this.usersRepository;
+
+    return repository.findOne({
+      where: { id: userId },
+    });
+  }
+
+  /**
    * Get current user
    */
   public async getCurrentUser(id: string): Promise<User> {
@@ -100,15 +115,8 @@ export class UsersService {
 
   /**
    * Change password for a user
-   * @param userId
-   * @param currentPassword
-   * @param newPassword
    */
-  public async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string,
-  ): Promise<void> {
+  public async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
     });
@@ -139,5 +147,35 @@ export class UsersService {
     });
 
     await this.sessionsService.revokeAllUserSessions(userId);
+  }
+
+  /**
+   * Update password for a user (used in password reset flow)
+   */
+  public async updatePassword(
+    userId: string,
+    passwordHash: string,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const repository = manager
+      ? manager.getRepository(User)
+      : this.usersRepository;
+
+    await repository.update(userId, {
+      passwordHash,
+    });
+  }
+
+  /**
+   * Find user by email for password reset (Specifically for the forgot password flow)
+   */
+  public async findByEmailForPasswordReset(
+    email: string,
+  ): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: {
+        email,
+      },
+    });
   }
 }

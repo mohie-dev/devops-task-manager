@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { RefreshSession } from './entities/refresh-session.entity';
 import { CreateSessionDto } from './dtos/create-session.dto';
 
@@ -61,8 +61,15 @@ export class SessionsService {
      * Revoke all sessions for a specific user
      * @param userId
      */
-    public async revokeAllUserSessions(userId: string): Promise<void> {
-        await this.sessionsRepository
+    public async revokeAllUserSessions(
+        userId: string,
+        manager?: EntityManager,
+    ): Promise<void> {
+        const repository = manager
+            ? manager.getRepository(RefreshSession)
+            : this.sessionsRepository;
+
+        await repository
             .createQueryBuilder()
             .update()
             .set({

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, Req, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req, UseInterceptors, HttpStatus, HttpCode } from '@nestjs/common';
 import type { Request } from 'express';
 import { RegisterDto } from './dtos/register.dto';
 import { AuthService } from './auth.service';
@@ -9,6 +9,8 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { UsersService } from 'src/users/users.service';
 import { SetCookieInterceptor } from '../common/interceptors/set-cookie.interceptor';
 import { ClearCookieInterceptor } from '../common/interceptors/clear-cookie.interceptor';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -57,6 +59,33 @@ export class AuthController {
         return this.authService.logout(
             req.cookies.refreshToken,
         );
+    }
+
+    // POST ~/api/auth/forgot-password
+    @Post('/forgot-password')
+    forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+        return this.authService.forgotPassword(forgotPasswordDto.email);
+    }
+
+    /**
+     * Reset Password
+     *
+     * Resets a user's password using a valid password reset token.
+     *
+     * Flow:
+     * 1. Receive reset token and new password.
+     * 2. Validate the reset token.
+     * 3. Update the user's password.
+     * 4. Revoke all active refresh sessions.
+     * 5. Mark the reset token as used.
+    */
+    // POST ~/api/auth/reset-password
+    @Post('/reset-password')
+    @HttpCode(HttpStatus.OK)
+    resetPassword(
+        @Body() resetPasswordDto: ResetPasswordDto,
+    ) {
+        return this.authService.resetPassword(resetPasswordDto);
     }
 
     // GET ~/api/auth/me

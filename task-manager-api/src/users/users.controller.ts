@@ -13,12 +13,11 @@ export class UsersController {
 
     // GET: ~/api/users
     @Get()
-
-    // @UseGuards(AuthGuard, AuthRolesGuard)
     getAllUsers() {
         return this.usersService.getAllUsers();
     }
 
+    // PATCH: ~/api/users/me/password
     @Patch('/me/password')
     @UseGuards(AuthGuard)
     changePassword(
