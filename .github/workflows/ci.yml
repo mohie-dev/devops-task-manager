@@ -57,6 +57,9 @@ jobs:
           DB_NAME: task_manager
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_EXPIRES_IN: 1d
+          GOOGLE_CLIENT_ID: "mock-google-client-id"
+          GOOGLE_CLIENT_SECRET: "mock-google-client-secret"
+          GOOGLE_CALLBACK_URL: "http://localhost:3000/auth/google/callback"
 
 
   docker:
