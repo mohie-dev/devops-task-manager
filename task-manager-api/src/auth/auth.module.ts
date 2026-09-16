@@ -10,6 +10,7 @@ import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { PasswordResetTokensService } from './password-reset-tokens.service';
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
 import { EmailVerificationTokensService } from './email-verification-tokens.service';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { EmailVerificationTokensService } from './email-verification-tokens.serv
     CommonModule,
     SessionsModule,
   ],
-  providers: [AuthService, PasswordResetTokensService, EmailVerificationTokensService],
+  providers: [AuthService, PasswordResetTokensService, GoogleStrategy, EmailVerificationTokensService],
   controllers: [AuthController],
   exports: [AuthService, TypeOrmModule],
 })
