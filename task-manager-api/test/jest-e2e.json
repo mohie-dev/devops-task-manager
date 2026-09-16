@@ -6,6 +6,9 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
+  "transformIgnorePatterns": [
+    "node_modules/(?!@nestjs/passport)"
+  ],
   "moduleNameMapper": {
     "^src/(.*)$": "<rootDir>/../src/$1",
     "^utils/(.*)$": "<rootDir>/../utils/$1"
