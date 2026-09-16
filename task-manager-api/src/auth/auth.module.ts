@@ -1,30 +1,25 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './guards/auth.guard';
 import { User } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 import { AuthController } from './auth.controller';
+import { SessionsModule } from 'src/sessions/sessions.module';
+import { CommonModule } from 'src/common/common.module';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
+import { PasswordResetTokensService } from './password-reset-tokens.service';
+import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { EmailVerificationTokensService } from './email-verification-tokens.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          global: true,
-          secret: config.getOrThrow<string>('JWT_SECRET'),
-          signOptions: { expiresIn: config.getOrThrow<string>('JWT_EXPIRES_IN') as any }
-        }
-      }
-    }),
+    TypeOrmModule.forFeature([User, PasswordResetToken, EmailVerificationToken]),
     forwardRef(() => UsersModule),
+    CommonModule,
+    SessionsModule,
   ],
-  providers: [AuthService, AuthGuard],
+  providers: [AuthService, PasswordResetTokensService, EmailVerificationTokensService],
   controllers: [AuthController],
-  exports: [AuthService, AuthGuard, JwtModule, TypeOrmModule],
+  exports: [AuthService, TypeOrmModule],
 })
 export class AuthModule { }

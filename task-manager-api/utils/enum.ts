@@ -1,6 +1,6 @@
-export enum Role {
-    ADMIN = 'admin',
-    USER = 'user',
+export enum AuthProvider {
+    LOCAL = 'local',
+    GOOGLE = 'google',
 }
 
 export enum TaskStatus {
