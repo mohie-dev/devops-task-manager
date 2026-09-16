@@ -1,3 +1,4 @@
+import { User } from "src/users/entities/user.entity";
 import {
     Column,
     CreateDateColumn,
@@ -5,12 +6,11 @@ import {
     JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
-    RelationId,
-} from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
+    RelationId
+} from "typeorm";
 
-@Entity({ name: 'password_reset_tokens' })
-export class PasswordResetToken {
+@Entity({ name: 'email_verification_tokens' })
+export class EmailVerificationToken {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -21,7 +21,10 @@ export class PasswordResetToken {
     @JoinColumn({ name: 'user_id' })
     user: User;
 
-    @RelationId((passwordResetToken: PasswordResetToken) => passwordResetToken.user)
+    @RelationId(
+        (verificationToken: EmailVerificationToken) =>
+            verificationToken.user,
+    )
     userId: string;
 
     @Column({ type: 'varchar', length: 64, unique: true })

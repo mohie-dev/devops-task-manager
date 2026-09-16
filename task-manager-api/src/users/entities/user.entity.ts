@@ -12,6 +12,7 @@ import { Task } from 'src/tasks/entities/task.entity';
 import { RefreshSession } from 'src/sessions/entities/refresh-session.entity';
 import { Exclude } from 'class-transformer';
 import { PasswordResetToken } from 'src/auth/entities/password-reset-token.entity';
+import { EmailVerificationToken } from 'src/auth/entities/email-verification-token.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -67,6 +68,12 @@ export class User {
         (passwordResetToken) => passwordResetToken.user,
     )
     passwordResetTokens: PasswordResetToken[];
+
+    @OneToMany(
+        () => EmailVerificationToken,
+        (emailVerificationToken) => emailVerificationToken.user,
+    )
+    emailVerificationTokens: EmailVerificationToken[];
 
     @CreateDateColumn()
     createdAt: Date;

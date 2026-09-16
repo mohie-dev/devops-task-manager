@@ -10,6 +10,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { RegisterDto } from './../auth/dtos/register.dto';
 import { SessionsService } from 'src/sessions/sessions.service';
+import { AuthProvider } from 'utils/enum';
+import { GoogleProfileType } from 'utils/type';
 
 @Injectable()
 export class UsersService {
@@ -46,6 +48,24 @@ export class UsersService {
       lastName,
       email,
       passwordHash,
+    });
+
+    return this.usersRepository.save(user);
+  }
+
+  public async createGoogleUser(
+    googleProfile: GoogleProfileType,
+  ): Promise<User> {
+    const user = this.usersRepository.create({
+      firstName: googleProfile.firstName,
+      lastName: googleProfile.lastName,
+      email: googleProfile.email,
+      passwordHash: null,
+      avatar: googleProfile.avatar,
+      provider: AuthProvider.GOOGLE,
+      providerId: googleProfile.providerId,
+      isEmailVerified: googleProfile.isEmailVerified,
+      isActive: true,
     });
 
     return this.usersRepository.save(user);
@@ -178,4 +198,28 @@ export class UsersService {
       },
     });
   }
+
+  public async findByProviderId(
+    provider: AuthProvider,
+    providerId: string,
+  ): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: {
+        provider,
+        providerId,
+      },
+    });
+  }
 }
+
+
+/**
+ * TODO:
+- Rename findByEmailForPasswordReset → generic method
+- Actual email provider
+- Email template
+- Verification URL
+- Cleanup expired tokens / scheduled job
+- Rate limiting على resend-verification
+- Proper Google email verification hardening
+ */

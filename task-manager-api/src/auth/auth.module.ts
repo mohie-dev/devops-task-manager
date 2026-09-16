@@ -8,15 +8,17 @@ import { SessionsModule } from 'src/sessions/sessions.module';
 import { CommonModule } from 'src/common/common.module';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { PasswordResetTokensService } from './password-reset-tokens.service';
+import { EmailVerificationToken } from './entities/email-verification-token.entity';
+import { EmailVerificationTokensService } from './email-verification-tokens.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, PasswordResetToken]),
-    CommonModule,
+    TypeOrmModule.forFeature([User, PasswordResetToken, EmailVerificationToken]),
     forwardRef(() => UsersModule),
+    CommonModule,
     SessionsModule,
   ],
-  providers: [AuthService, PasswordResetTokensService],
+  providers: [AuthService, PasswordResetTokensService, EmailVerificationTokensService],
   controllers: [AuthController],
   exports: [AuthService, TypeOrmModule],
 })

@@ -4,13 +4,16 @@ import { randomBytes, createHash } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
-import { JWTPayloadType } from 'utils/type';
+import { GoogleProfileType, JWTPayloadType } from 'utils/type';
 import { UsersService } from 'src/users/users.service';
 import { SessionsService } from 'src/sessions/sessions.service';
 import { User } from 'src/users/entities/user.entity';
 import { PasswordResetTokensService } from './password-reset-tokens.service';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { DataSource } from 'typeorm';
+import { AuthProvider } from 'utils/enum';
+import { EmailVerificationTokensService } from './email-verification-tokens.service';
+import { ResendVerificationDto } from './dtos/resend-verification.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly sessionsService: SessionsService,
     private readonly passwordResetTokensService: PasswordResetTokensService,
+    private readonly emailVerificationTokensService: EmailVerificationTokensService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -35,7 +39,18 @@ export class AuthService {
     ipAddress?: string,
   ) {
     const user = await this.usersService.createUser(registerDto);
-    return this.generateTokensAndSession(user, userAgent, ipAddress);
+
+    const verificationToken =
+      await this.createEmailVerificationToken(user.id);
+
+    // TODO: Send verification email
+    console.log('VERIFICATION TOKEN:', verificationToken);
+
+    return this.generateTokensAndSession(
+      user,
+      userAgent,
+      ipAddress,
+    );
   }
 
   /**
@@ -64,6 +79,37 @@ export class AuthService {
 
     await this.usersService.updateLastLoginAt(user.id);
     return this.generateTokensAndSession(user, userAgent, ipAddress);
+  }
+
+  public async googleLogin(
+    googleProfile: GoogleProfileType,
+    userAgent?: string,
+    ipAddress?: string,
+  ) {
+    let user = await this.usersService.findByProviderId(
+      AuthProvider.GOOGLE,
+      googleProfile.providerId,
+    );
+
+    if (!user) {
+      user = await this.usersService.createGoogleUser(
+        googleProfile,
+      );
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'User account is inactive',
+      );
+    }
+
+    await this.usersService.updateLastLoginAt(user.id);
+
+    return this.generateTokensAndSession(
+      user,
+      userAgent,
+      ipAddress,
+    );
   }
 
   /**
@@ -241,6 +287,92 @@ export class AuthService {
     });
   }
 
+  public async verifyEmail(token: string): Promise<void> {
+    const tokenHash = createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    await this.dataSource.transaction(async (manager) => {
+      // 1. Lock and validate verification token
+      const verificationToken =
+        await this.emailVerificationTokensService.findValidToken(
+          tokenHash,
+          manager,
+        );
+
+      if (!verificationToken) {
+        throw new UnauthorizedException(
+          'Invalid or expired email verification token',
+        );
+      }
+
+      // 2. Load user using the same transaction manager
+      const user = await this.usersService.findById(
+        verificationToken.userId,
+        manager,
+      );
+
+      if (!user) {
+        throw new UnauthorizedException(
+          'Invalid email verification request',
+        );
+      }
+
+      if (!user.isActive) {
+        throw new UnauthorizedException(
+          'User account is inactive',
+        );
+      }
+
+      // 3. Mark email as verified
+      await manager.getRepository(User).update(user.id, {
+        isEmailVerified: true,
+      });
+
+      // 4. Mark verification token as used
+      await this.emailVerificationTokensService.markAsUsed(
+        verificationToken.id,
+        manager,
+      );
+    });
+  }
+
+  public async resendVerificationEmail(
+    resendVerificationDto: ResendVerificationDto,
+  ): Promise<void> {
+    const { email } = resendVerificationDto;
+
+    const user =
+      await this.usersService.findByEmailForPasswordReset(email);
+
+    if (!user) {
+      return;
+    }
+
+    if (user.isEmailVerified) {
+      return;
+    }
+
+    if (!user.isActive) {
+      return;
+    }
+
+    // Invalidate previous verification tokens
+    await this.emailVerificationTokensService.invalidateUserTokens(
+      user.id,
+    );
+
+    // Generate a new verification token
+    const verificationToken =
+      await this.createEmailVerificationToken(user.id);
+
+    // TODO: Send verification email
+    console.log(
+      'NEW VERIFICATION TOKEN:',
+      verificationToken,
+    );
+  }
+
   /**
    * Helper function to issue Access Token + Refresh Token and save Session
    */
@@ -284,5 +416,27 @@ export class AuthService {
 
   private hashRefreshToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
+  }
+
+  private async createEmailVerificationToken(
+    userId: string,
+  ): Promise<string> {
+    const verificationToken = randomBytes(32).toString('hex');
+
+    const tokenHash = createHash('sha256')
+      .update(verificationToken)
+      .digest('hex');
+
+    const expiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
+
+    await this.emailVerificationTokensService.createToken(
+      userId,
+      tokenHash,
+      expiresAt,
+    );
+
+    return verificationToken;
   }
 }

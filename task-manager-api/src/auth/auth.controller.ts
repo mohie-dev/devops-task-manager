@@ -1,4 +1,15 @@
-import { Controller, Post, Body, Get, UseGuards, Req, UseInterceptors, HttpStatus, HttpCode } from '@nestjs/common';
+import {
+    Controller,
+    Post,
+    Body,
+    Get,
+    UseGuards,
+    Req,
+    UseInterceptors,
+    HttpStatus,
+    HttpCode,
+    Query
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { RegisterDto } from './dtos/register.dto';
 import { AuthService } from './auth.service';
@@ -11,6 +22,8 @@ import { SetCookieInterceptor } from '../common/interceptors/set-cookie.intercep
 import { ClearCookieInterceptor } from '../common/interceptors/clear-cookie.interceptor';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { GoogleAuthGuard } from 'src/common/guards/google-auth.guard';
+import { ResendVerificationDto } from './dtos/resend-verification.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -39,6 +52,46 @@ export class AuthController {
             req.headers['user-agent'],
             req.ip,
         );
+    }
+
+    // POST ~/api/auth/google
+    @Get('google')
+    @UseGuards(GoogleAuthGuard)
+    googleLogin() { }
+
+    // POST ~/api/auth/google/callback
+    @Get('google/callback')
+    @UseGuards(GoogleAuthGuard)
+    @UseInterceptors(SetCookieInterceptor)
+    googleCallback(@Req() req: Request) {
+        return this.authService.googleLogin(
+            req.user as type.GoogleProfileType,
+            req.headers['user-agent'],
+            req.ip,
+        );
+    }
+
+    // GET ~/api/auth/verify-email
+    @Get('/verify-email')
+    public async verifyEmail(@Query('token') token: string) {
+        await this.authService.verifyEmail(token);
+
+        return {
+            message: 'Email verified successfully',
+        };
+    }
+
+    // POST ~/api/auth/resend-verification
+    @Post('resend-verification')
+    public async resendVerification(
+        @Body() resendVerificationDto: ResendVerificationDto,
+    ) {
+        await this.authService.resendVerificationEmail(
+            resendVerificationDto,
+        );
+        return {
+            message: 'If the email exists, a verification email will be sent',
+        };
     }
 
     // POST ~/api/auth/refresh
