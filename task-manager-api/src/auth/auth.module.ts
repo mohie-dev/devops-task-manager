@@ -11,6 +11,7 @@ import { PasswordResetTokensService } from './password-reset-tokens.service';
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
 import { EmailVerificationTokensService } from './email-verification-tokens.service';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { MailModule } from 'src/emails/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     forwardRef(() => UsersModule),
     CommonModule,
     SessionsModule,
+    MailModule
   ],
   providers: [AuthService, PasswordResetTokensService, GoogleStrategy, EmailVerificationTokensService],
   controllers: [AuthController],
