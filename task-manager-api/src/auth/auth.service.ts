@@ -14,6 +14,7 @@ import { DataSource } from 'typeorm';
 import { AuthProvider } from 'utils/enum';
 import { EmailVerificationTokensService } from './email-verification-tokens.service';
 import { ResendVerificationDto } from './dtos/resend-verification.dto';
+import { MailService } from 'src/emails/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly sessionsService: SessionsService,
     private readonly passwordResetTokensService: PasswordResetTokensService,
     private readonly emailVerificationTokensService: EmailVerificationTokensService,
+    private readonly mailService: MailService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -39,12 +41,9 @@ export class AuthService {
     ipAddress?: string,
   ) {
     const user = await this.usersService.createUser(registerDto);
+    const verificationToken = await this.createEmailVerificationToken(user.id);
 
-    const verificationToken =
-      await this.createEmailVerificationToken(user.id);
-
-    // TODO: Send verification email
-    console.log('VERIFICATION TOKEN:', verificationToken);
+    this.mailService.sendVerificationEmail(user.email, verificationToken);
 
     return this.generateTokensAndSession(
       user,
@@ -214,6 +213,7 @@ export class AuthService {
     );
 
     // TODO: Send reset email
+
     console.log('RESET TOKEN:', resetToken);
   }
 
@@ -341,36 +341,16 @@ export class AuthService {
     resendVerificationDto: ResendVerificationDto,
   ): Promise<void> {
     const { email } = resendVerificationDto;
+    const user = await this.usersService.findByEmailForPasswordReset(email);
 
-    const user =
-      await this.usersService.findByEmailForPasswordReset(email);
-
-    if (!user) {
+    if (!user || user.isEmailVerified || !user.isActive) {
       return;
     }
 
-    if (user.isEmailVerified) {
-      return;
-    }
+    await this.emailVerificationTokensService.invalidateUserTokens(user.id);
+    const verificationToken = await this.createEmailVerificationToken(user.id);
 
-    if (!user.isActive) {
-      return;
-    }
-
-    // Invalidate previous verification tokens
-    await this.emailVerificationTokensService.invalidateUserTokens(
-      user.id,
-    );
-
-    // Generate a new verification token
-    const verificationToken =
-      await this.createEmailVerificationToken(user.id);
-
-    // TODO: Send verification email
-    console.log(
-      'NEW VERIFICATION TOKEN:',
-      verificationToken,
-    );
+    this.mailService.sendVerificationEmail(user.email, verificationToken);
   }
 
   /**
