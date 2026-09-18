@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-
 import { EmailVerificationToken } from './entities/email-verification-token.entity';
 
 @Injectable()

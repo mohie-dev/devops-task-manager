@@ -12,8 +12,8 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { AuthGuard } from 'src/common/guards/auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthGuard } from '../../common/guards/auth.guard';
 import { CreateTaskDto } from './dtos/create-task.dto';
 import { UpdateTaskDto } from './dtos/update-task.dto';
 import { UpdateTaskStatusDto } from './dtos/update-task-status.dto';

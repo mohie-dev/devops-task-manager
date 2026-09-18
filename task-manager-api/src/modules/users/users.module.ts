@@ -3,8 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UsersController } from './users.controller';
-import { SessionsModule } from 'src/sessions/sessions.module';
-import { CommonModule } from 'src/common/common.module';
+import { SessionsModule } from '../sessions/sessions.module';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
     imports: [

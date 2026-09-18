@@ -5,16 +5,16 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { GoogleProfileType, JWTPayloadType } from 'utils/type';
-import { UsersService } from 'src/users/users.service';
-import { SessionsService } from 'src/sessions/sessions.service';
-import { User } from 'src/users/entities/user.entity';
+import { UsersService } from '../users/users.service';
+import { SessionsService } from '../sessions/sessions.service';
+import { User } from '../users/entities/user.entity';
 import { PasswordResetTokensService } from './password-reset-tokens.service';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { DataSource } from 'typeorm';
 import { AuthProvider } from 'utils/enum';
 import { EmailVerificationTokensService } from './email-verification-tokens.service';
 import { ResendVerificationDto } from './dtos/resend-verification.dto';
-import { MailService } from 'src/emails/mail.service';
+import { MailService } from '../emails/mail.service';
 
 @Injectable()
 export class AuthService {

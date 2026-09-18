@@ -8,7 +8,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'refresh_sessions' })
 export class RefreshSession {

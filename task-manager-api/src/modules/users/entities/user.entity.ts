@@ -7,12 +7,12 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-import { AuthProvider } from '../../../utils/enum';
-import { Task } from 'src/tasks/entities/task.entity';
-import { RefreshSession } from 'src/sessions/entities/refresh-session.entity';
+import { AuthProvider } from '../../../../utils/enum';
+import { Task } from '../../tasks/entities/task.entity';
+import { RefreshSession } from '../../sessions/entities/refresh-session.entity';
 import { Exclude } from 'class-transformer';
-import { PasswordResetToken } from 'src/auth/entities/password-reset-token.entity';
-import { EmailVerificationToken } from 'src/auth/entities/email-verification-token.entity';
+import { PasswordResetToken } from '../../auth/entities/password-reset-token.entity';
+import { EmailVerificationToken } from '../../auth/entities/email-verification-token.entity';
 
 @Entity({ name: 'users' })
 export class User {

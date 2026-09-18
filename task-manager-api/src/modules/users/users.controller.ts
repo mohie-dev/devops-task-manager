@@ -2,8 +2,8 @@ import { Controller, Post, Body, Get, UseGuards, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import type { JWTPayloadType } from 'utils/type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { AuthGuard } from 'src/common/guards/auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AuthGuard } from '../../common/guards/auth.guard';
 
 @Controller('api/users')
 export class UsersController {

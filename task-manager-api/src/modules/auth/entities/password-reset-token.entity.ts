@@ -7,7 +7,7 @@ import {
     PrimaryGeneratedColumn,
     RelationId,
 } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity({ name: 'password_reset_tokens' })
 export class PasswordResetToken {

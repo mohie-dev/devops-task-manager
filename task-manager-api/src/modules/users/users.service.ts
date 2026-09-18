@@ -9,7 +9,7 @@ import { EntityManager, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { RegisterDto } from './../auth/dtos/register.dto';
-import { SessionsService } from 'src/sessions/sessions.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { AuthProvider } from 'utils/enum';
 import { GoogleProfileType } from 'utils/type';
 
