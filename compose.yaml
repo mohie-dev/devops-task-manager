@@ -17,6 +17,7 @@ services:
       start_period: 10s
   api:
     image: task-manager-api:1.0
+    command: npm run start:prod 
     env_file:
       - task-manager-api\.env.docker
     ports:
