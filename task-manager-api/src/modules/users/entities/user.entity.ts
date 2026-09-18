@@ -42,6 +42,15 @@ export class User {
     })
     provider: AuthProvider;
 
+    @Column({ type: 'text', nullable: true })
+    bio: string | null;
+
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    phoneNumber: string | null;
+
+    @Column({ type: 'varchar', length: 100, nullable: true })
+    jobTitle: string | null;
+
     @Column({ type: 'varchar', length: 255, nullable: true })
     providerId: string | null;
 

@@ -12,6 +12,8 @@ import { RegisterDto } from './../auth/dtos/register.dto';
 import { SessionsService } from '../sessions/sessions.service';
 import { AuthProvider } from 'utils/enum';
 import { GoogleProfileType } from 'utils/type';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { S3Service } from '../files/s3.service';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +21,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly sessionsService: SessionsService,
+    private readonly s3Service: S3Service
   ) { }
 
   /**
@@ -76,6 +79,27 @@ export class UsersService {
    */
   public async getAllUsers(): Promise<User[]> {
     return this.usersRepository.find();
+  }
+
+  /**
+   * Update user profile details
+   */
+  public async updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<User> {
+    const user = await this.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.usersRepository.update(userId, updateProfileDto);
+
+    const updatedUser = await this.findById(userId);
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found after update');
+    }
+
+    return updatedUser;
   }
 
   /**
@@ -209,6 +233,41 @@ export class UsersService {
         providerId,
       },
     });
+  }
+
+  public async uploadAvatar(userId: string, file: Express.Multer.File): Promise<User> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.avatar) {
+      await this.s3Service.deleteFile(user.avatar);
+    }
+
+    const avatarUrl = await this.s3Service.uploadFile(file, 'users-avatars');
+
+    await this.usersRepository.update(userId, { avatar: avatarUrl });
+
+    const updatedUser = await this.findById(userId);
+    if (!updatedUser) throw new NotFoundException('User not found after update');
+
+    return updatedUser;
+  }
+
+  /**
+   * Deactivate user account (Soft Delete alternative)
+   */
+  public async deactivateAccount(userId: string): Promise<void> {
+    const user = await this.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.usersRepository.update(userId, { isActive: false });
+
+    await this.sessionsService.revokeAllUserSessions(userId);
   }
 }
 
